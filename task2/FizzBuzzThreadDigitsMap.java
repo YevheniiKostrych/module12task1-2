@@ -1,95 +1,96 @@
 package module12.task2;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class FizzBuzzThreadDigitsMap {
     private final int n;
-    private final AtomicInteger current;
-    private final BlockingQueue<String> queue;
+    private final AtomicInteger current = new AtomicInteger(1);
+    private final Object lock = new Object();
 
     public FizzBuzzThreadDigitsMap(int n) {
         this.n = n;
-        this.current = new AtomicInteger(1);
-        this.queue = new LinkedBlockingQueue<>();
     }
 
     public void fizz() {
         while (true) {
-            int num = current.get();
-            if (num > n) break;
-            if (num % 3 == 0 && num % 5 != 0) {
-                try {
-                    queue.put("fizz");
-                    current.incrementAndGet();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+            synchronized (lock) {
+                while (current.get() <= n && (current.get() % 3 != 0 || current.get() % 5 == 0)) {
+                    try {
+                        lock.wait();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
                 }
+                if (current.get() > n) return;
+                System.out.print("fizz");
+                if (current.get() < n) {
+                    System.out.print(", ");
+                }
+                current.incrementAndGet();
+                lock.notifyAll();
             }
         }
     }
 
     public void buzz() {
         while (true) {
-            int num = current.get();
-            if (num > n) break;
-            if (num % 5 == 0 && num % 3 != 0) {
-                try {
-                    queue.put("buzz");
-                    current.incrementAndGet();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+            synchronized (lock) {
+                while (current.get() <= n && (current.get() % 5 != 0 || current.get() % 3 == 0)) {
+                    try {
+                        lock.wait();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
                 }
+                if (current.get() > n) return;
+                System.out.print("buzz");
+                if (current.get() < n) {
+                    System.out.print(", ");
+                }
+                current.incrementAndGet();
+                lock.notifyAll();
             }
         }
     }
 
     public void fizzbuzz() {
         while (true) {
-            int num = current.get();
-            if (num > n) break;
-            if (num % 3 == 0 && num % 5 == 0) {
-                try {
-                    queue.put("fizzbuzz");
-                    current.incrementAndGet();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+            synchronized (lock) {
+                while (current.get() <= n && (current.get() % 3 != 0 || current.get() % 5 != 0)) {
+                    try {
+                        lock.wait();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
                 }
+                if (current.get() > n) return;
+                System.out.print("fizzbuzz");
+                if (current.get() < n) {
+                    System.out.print(", ");
+                }
+                current.incrementAndGet();
+                lock.notifyAll();
             }
         }
     }
 
     public void number() {
         while (true) {
-            int num = current.get();
-            if (num > n) break;
-            if (num % 3 != 0 && num % 5 != 0) {
-                try {
-                    queue.put(String.valueOf(num));
-                    current.incrementAndGet();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-            }
-        }
-    }
-
-    public void printOutput() {
-        StringBuilder result = new StringBuilder();
-        while (true) {
-            try {
-                String output = queue.take();
-                result.append(output).append(", ");
-                if (current.get() > n && queue.isEmpty()) {
-                    if (result.length() > 2) {
-                        result.setLength(result.length() - 2);
+            synchronized (lock) {
+                while (current.get() <= n && (current.get() % 3 == 0 || current.get() % 5 == 0)) {
+                    try {
+                        lock.wait();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
                     }
-                    System.out.println(result.toString());
-                    break;
                 }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+                if (current.get() > n) return;
+                System.out.print(current.get());
+                if (current.get() < n) {
+                    System.out.print(", ");
+                }
+                current.incrementAndGet();
+                lock.notifyAll();
             }
         }
     }
